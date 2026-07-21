@@ -199,9 +199,25 @@
   .confetto{position:absolute;width:7px;height:12px;opacity:.9;}
 
   footer{position:relative;z-index:3;text-align:center;padding:3rem 0 2rem;color:var(--ink-soft);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;}
+
+  #music-toggle{
+    position:fixed;bottom:22px;right:22px;z-index:200;
+    width:46px;height:46px;border-radius:50%;border:none;
+    background:var(--terracotta);color:#fff;font-size:1.1rem;cursor:pointer;
+    box-shadow:0 6px 16px rgba(58,43,34,.3);
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .25s ease;
+  }
+  #music-toggle:active{transform:scale(.92);}
+  #music-toggle.muted{background:#fff;color:var(--terracotta);border:1.5px solid var(--terracotta);}
 </style>
 </head>
 <body>
+
+<audio id="bgm" loop preload="auto">
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+<button id="music-toggle" aria-label="Toggle music">♪</button>
 
 <!-- floating petals -->
 <div id="particle-field"></div>
@@ -635,8 +651,39 @@ const io = new IntersectionObserver((entries)=>{
 },{threshold:.2});
 reveals.forEach(r=>io.observe(r));
 
+// ---------- background music ----------
+const bgm = document.getElementById('bgm');
+const musicBtn = document.getElementById('music-toggle');
+let musicStarted = false;
+function startMusic(){
+  if(musicStarted) return;
+  musicStarted = true;
+  bgm.volume = 0.55;
+  bgm.play().then(()=>{
+    musicBtn.classList.remove('muted');
+    musicBtn.textContent = '♪';
+  }).catch(()=>{
+    // autoplay blocked — user can start it manually via the toggle button
+    musicStarted = false;
+  });
+}
+musicBtn.addEventListener('click', ()=>{
+  if(bgm.paused){
+    bgm.play().then(()=>{
+      musicStarted = true;
+      musicBtn.classList.remove('muted');
+      musicBtn.textContent = '♪';
+    }).catch(()=>{});
+  } else {
+    bgm.pause();
+    musicBtn.classList.add('muted');
+    musicBtn.textContent = '𝄽';
+  }
+});
+
 // ---------- page 1 -> page 2 ----------
 document.getElementById('enter-btn').addEventListener('click', ()=>{
+  startMusic();
   document.getElementById('hero').scrollIntoView({behavior:'smooth'});
 });
 
